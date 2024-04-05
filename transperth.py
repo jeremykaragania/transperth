@@ -41,12 +41,18 @@ user_api = api(
 # in the data of one of the first POST requests.
 device_id = None
 
+params_base = {
+  "format": "json",
+}
+
+headers_base = {
+  "Content-Type": "application/json"
+}
+
 # authenticate_with_device_id authenticates a device ID "d_id". On
 # authentication success, the response contains the JourneyPlanner API key.
 def authenticate_with_device_id(d_id):
-  headers = {
-    "Content-Type": "application/json"
-  }
+  headers = headers_base
   data = {
     "AppApiKey": authenticate_api.key,
     "authMode": 1,
@@ -57,6 +63,31 @@ def authenticate_with_device_id(d_id):
   r = requests.post(f"{authenticate_api.endpoint}/authenticate", headers=headers, data=json.dumps(data))
   if r.status_code == 200:
     r_json = r.json()
-    journey_planner_api.key = r_json["jjpapikey"]
+    params_base["ApiKey"] = journey_planner_api.key = r_json["jjpapikey"]
     device_id = r_json["deviceID"]
   return r
+
+# fetch_stops_near_me returns transit stops relative to a position, "lat", and
+# "long". The remaining request parameters: "max_distance", "max_stops", and
+# "speed" specify constraints on these transit stops.
+def fetch_stops_near_me(lat, long, max_distance=6500, max_stops=15, speed=4):
+  headers = headers_base
+  params = params_base
+  params |= {
+    "maximumWalkDistanceInMetres": max_distance,
+    "maximumStopsToReturn": max_stops,
+    "walkSpeed": speed,
+    "GeoCoordinate": f"{lat}, {long}"
+  }
+  return requests.get(f"{journey_planner_api.endpoint}/NearbyTransitStops", headers=headers, params=params)
+
+# check_available_reference_data returns reference data used by the app. On
+# success, the response contains several AWS URLs to structured reference data
+# for landmarks, routes, route timetable groups, service providers, transit
+# stops, transport modes, park and rides, data set information, trip
+# attributes, products, and vehicle categories. Some structured data may be
+# empty.
+def check_available_reference_data():
+  headers = headers_base
+  params = params_base
+  return requests.get(f"{journey_planner_api.endpoint}/AvailableReferenceData", headers=headers, params=params)
