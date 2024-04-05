@@ -81,6 +81,41 @@ def fetch_stops_near_me(lat, long, max_distance=6500, max_stops=15, speed=4):
   }
   return requests.get(f"{journey_planner_api.endpoint}/NearbyTransitStops", headers=headers, params=params)
 
+# fetch_route_lookup returns route information from a search term "code" which
+# is the code of the route. The response contains the information of routes
+# where their code matches "code". It seems that the match function is not
+# strict, "code" just has to be a subsequence. Notably, the information of a
+# route contains its UID and transport mode.
+def fetch_route_lookup(code):
+  headers = headers_base
+  params = params_base
+  params |= {
+    "SearchTerm": code
+  }
+  return requests.get(f"{journey_planner_api.endpoint}/Routes", headers=headers, params=params)
+
+# fetch_route_timetable returns the timetable information of a route "route"
+# between "start_date" and "end_date", and may return some additional
+# information depending on "return_notes". "route" is the UID of the route, and
+# "start_date" and "end_date" are in ISO 8601 format and are usually equal. The
+# notable objects of the response include timetable trips and stop patterns.
+# The timetable trips information is the bulk of the response and contains
+# information for each trip on the route within the interval. Each trip
+# contains the arrival and departure timings for each stop. The stop patterns
+# information contains all of the possible stop arrangements the route can
+# take, usually there are just two, one for each direction: backwards and
+# forwards.
+def fetch_route_timetable(route, start_date, end_date, return_notes=True):
+  headers = headers_base
+  params = params_base
+  params |= {
+    "Route": route,
+    "StartDate": start_date,
+    "EndDate": end_date,
+    "ReturnNotes": return_notes
+  }
+  return requests.get(f"{journey_planner_api.endpoint}/Timetable", headers=headers, params=params)
+
 # check_available_reference_data returns reference data used by the app. On
 # success, the response contains several AWS URLs to structured reference data
 # for landmarks, routes, route timetable groups, service providers, transit
