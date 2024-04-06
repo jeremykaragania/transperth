@@ -100,10 +100,11 @@ def fetch_route_lookup(code):
 # "start_date" and "end_date" are in ISO 8601 format and are usually equal. The
 # notable objects of the response include timetable trips and stop patterns.
 # The timetable trips information is the bulk of the response and contains
-# information for each trip on the route within the interval. Each trip
-# contains the arrival and departure timings for each stop. The stop patterns
-# information contains all of the possible stop arrangements the route can
-# take, usually there are just two, one for each direction: backwards and
+# information for each trip on the route within the interval.
+#
+# Each trip contains the arrival and departure timings for each stop. The stop
+# patterns information contains all of the possible stop arrangements the route
+# can take, usually there are just two, one for each direction: backwards and
 # forwards.
 def fetch_route_timetable(route, start_date, end_date, return_notes=True):
   headers = headers_base
@@ -115,6 +116,45 @@ def fetch_route_timetable(route, start_date, end_date, return_notes=True):
     "ReturnNotes": return_notes
   }
   return requests.get(f"{journey_planner_api.endpoint}/Timetable", headers=headers, params=params)
+
+# fetch_journeys returns possible journeys between an origin position "origin"
+# and a destination position "destination" on a certain date and time "dt".
+# The positions can be specified as a stop UID or a coordinate and "dt" is in
+# ISO 8601 format: "YYYY-MM-DDTHH:MM". There are several other optional
+# parameters. "return_notes" optionally returns additional information;
+# "mapping_data_required" seems determines if the points which make up the
+# journey are returned; "time_mode" changes how "dt" is interpreted;
+# "max_changes" is the maximum number of changes on the trip; "max_distance" is
+# the maximum walking distance in the journey, likely in meters;
+# "transport_modes" is a semicolon separated list of modes of transport for the
+# journey, "School Bus" is also accepted; "check_realtime" seems to have no
+# effect; "speed" is the maximum walking speed in the journey, likely in
+# kilometers per hour; and "max_journeys" seems to have an effect on the number
+# of journeys returned though it isn't strict.
+#
+# Each journey contains an ID; departure and arrival time; additional
+# information about the origin and destination; information about the legs of
+# the journey; number of changes; and estimated carbon dioxide emissions.
+# Supplementary location information is also returned to be referenced by a
+# journey.
+def fetch_journeys(origin, destination, dt, return_notes=True, mapping_data_required=True, time_mode="LeaveAfter", max_changes=2147483647, max_distance=2000, transport_modes="Bus;Rail;Ferry", check_realtime=False, speed=4, max_journeys=5):
+  headers = headers_base
+  params = params_base
+  params |= {
+    "ReturnNotes": return_notes,
+    "mappingdatarequired": mapping_data_required,
+    "To": origin,
+    "From": destination,
+    "TimeMode": time_mode,
+    "MaxChanges": max_changes,
+    "MaxWalkDistanceMetres": max_distance,
+    "TransportModes": transport_modes,
+    "Date": dt,
+    "CheckRealTime": check_realtime,
+    "WalkSpeed": speed,
+    "MaxJourneys": max_journeys
+  }
+  return requests.get(f"{journey_planner_api.endpoint}/JourneyPlan", headers=headers, params=params)
 
 # check_available_reference_data returns reference data used by the app. On
 # success, the response contains several AWS URLs to structured reference data
