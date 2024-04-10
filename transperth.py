@@ -52,6 +52,7 @@ headers_base = {
 # authenticate_with_device_id authenticates a device ID "d_id". On
 # authentication success, the response contains the JourneyPlanner API key.
 def authenticate_with_device_id(d_id):
+  global device_id
   headers = headers_base
   data = {
     "AppApiKey": authenticate_api.key,
