@@ -28,7 +28,7 @@ journey_planner_realtime_api = api(
   endpoint="https://realtime.transperth.info/SJP",
   key=None)
 
-# user_api is the User API. It is the same API as the authentication API in
+# user_api is the user API. It is the same API as the authentication API in
 # terms of its endpoint and API key.
 user_api = api(
   endpoint="https://www.transperth.wa.gov.au/DesktopModules/JJPApiService/API/JJPApi",
@@ -41,6 +41,10 @@ user_api = api(
 # in the data of one of the first POST requests.
 device_id = None
 
+# auth_token is an access token to identify a user which is used with the user
+# API when a user logs into the Transperth app.
+auth_token = None
+
 params_base = {
   "format": "json",
 }
@@ -48,6 +52,28 @@ params_base = {
 headers_base = {
   "Content-Type": "application/json"
 }
+
+# authenticate_with_user authenticates a user with an email address and a
+# password. On authentication success, the response contains an access token
+# for the user API.
+def authenticate_with_user(email, password):
+  global device_id, auth_token
+  headers = headers_base
+  data = {
+    "AppApiKey": authenticate_api.key,
+    "authMode": 1,
+    "Device": {
+      "DeviceId": device_id,
+      },
+    "ApiKey": journey_planner_api.key,
+    "Email": email,
+    "Password": password
+  }
+  r = requests.post(f"{authenticate_api.endpoint}/Authenticate", headers=headers, data=json.dumps(data))
+  if r.status_code == 200:
+    r_json = r.json()
+    auth_token = r_json["hash"]
+  return r
 
 # authenticate_with_device_id authenticates a device ID "d_id". On
 # authentication success, the response contains the JourneyPlanner API key.
