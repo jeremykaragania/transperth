@@ -27,7 +27,7 @@ python3 -m pip install -e transperth
 >>> r = transperth.fetch_route_timetable(route["RouteUid"], begin_date=today, end_date=today)
 >>> route_trips = r.json()['TimetableTrips']
 >>> len(route_trips)
->>> 185
+185
 >>> trip = route_trips[0]
 >>> trip["TripStopTimings"]
 [
