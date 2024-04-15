@@ -34,23 +34,33 @@ user_api = api(
   endpoint="https://www.transperth.wa.gov.au/DesktopModules/JJPApiService/API/JJPApi",
   key="CB7EF0B64DEF4641A6054F4685489D8D")
 
-# device_id is a version 4 (random) universally unique identifier (UUID) used
-# for device authentication. It doesn't seem to be generated through the API,
-# rather it seems to be generated on the device itself. You can get your device
-# ID empirically using a proxy server with the Transperth app. It's contained
-# in the data of one of the first POST requests.
+# device_id is generated using getUniqueId from the react-native-device-info
+# package. The method in which it is generated is OS specific. You can get your
+# device ID empirically using a proxy server with the Transperth app. It's
+# contained in the data of one of the first POST requests.
 device_id = None
 
 # auth_token is an access token to identify a user which is used with the user
 # API when a user logs into the Transperth app.
 auth_token = None
 
-params_base = {
-  "format": "json",
-}
-
 headers_base = {
   "Content-Type": "application/json"
+}
+
+params_base = {
+  "format": "json",
+  "ApiKey": None
+}
+
+data_base = {
+  "format": "json",
+  "AppApiKey": authenticate_api.key,
+  "authMode": 1,
+  "Device": {
+    "DeviceId": None,
+    },
+  "ApiKey": journey_planner_api.key
 }
 
 # authenticate_with_user authenticates a user with an email address and a
@@ -59,13 +69,8 @@ headers_base = {
 def authenticate_with_user(email, password):
   global device_id, auth_token
   headers = headers_base
-  data = {
-    "AppApiKey": authenticate_api.key,
-    "authMode": 1,
-    "Device": {
-      "DeviceId": device_id,
-      },
-    "ApiKey": journey_planner_api.key,
+  data = data_base
+  data |= {
     "Email": email,
     "Password": password
   }
@@ -80,18 +85,13 @@ def authenticate_with_user(email, password):
 def authenticate_with_device_id(d_id):
   global device_id
   headers = headers_base
-  data = {
-    "AppApiKey": authenticate_api.key,
-    "authMode": 1,
-    "Device": {
-      "DeviceId": d_id,
-      }
-  }
+  data = data_base
+  data["Device"]["DeviceId"] = d_id
   r = requests.post(f"{authenticate_api.endpoint}/authenticate", headers=headers, data=json.dumps(data))
   if r.status_code == 200:
     r_json = r.json()
-    params_base["ApiKey"] = journey_planner_api.key = r_json["jjpapikey"]
-    device_id = r_json["deviceID"]
+    params_base["ApiKey"] = data_base["ApiKey"] = journey_planner_api.key = r_json["jjpapikey"]
+    data_base["Device"]["DeviceId"] = device_id = r_json["deviceID"]
   return r
 
 # fetch_stops_near_me returns transit stops relative to a position, "lat", and
