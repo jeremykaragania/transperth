@@ -41,7 +41,7 @@ python3 -m pip install -e transperth
   },
   ...
 ]
->> trip["Headsign"]
+>>> trip["Headsign"]
 'Qeii Medical Ctr'
 ```
 
