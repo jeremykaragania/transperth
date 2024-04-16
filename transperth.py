@@ -44,6 +44,10 @@ device_id = None
 # API when a user logs into the Transperth app.
 auth_token = None
 
+# user email is the email address which is used with the user API when a user
+# logs into the Transperth app.
+user_email = None
+
 headers_base = {
   "Content-Type": "application/json"
 }
@@ -67,7 +71,7 @@ data_base = {
 # password. On authentication success, the response contains an access token
 # for the user API.
 def authenticate_with_user(email, password):
-  global device_id, auth_token
+  global device_id, auth_token, user_email
   headers = headers_base
   data = data_base
   data |= {
@@ -75,9 +79,33 @@ def authenticate_with_user(email, password):
     "Password": password
   }
   r = requests.post(f"{authenticate_api.endpoint}/Authenticate", headers=headers, data=json.dumps(data))
-  if r.status_code == 200:
-    r_json = r.json()
-    auth_token = r_json["hash"]
+  r_json = r.json()
+  auth_token = r_json["hash"]
+  user_email = email
+  return r
+
+# fetch_transaction_history returns "max_transactions" past transactions of a
+# SmartRider, specified by its number "psn", between "from_date" until
+# "to_date". The SmartRider must be connected to the user's account.
+#
+# Each transaction contains a transaction date and time; transaction number;
+# the type of transaction; tag on location; bus number if applicable;
+# travel zone; transaction amount; remaining balance; and some additional
+# information.
+def fetch_transaction_history(psn, from_date, to_date, max_transactions=500):
+  headers = headers_base
+  data = data_base
+  data |= {
+    "AuthToken": auth_token,
+    "Email": user_email,
+    "PSN": psn,
+    "fromDate": from_date,
+    "toDate": to_date,
+    "tPageNumber": 0,
+    "tPageSize": max_transactions,
+    "mode": 4
+  }
+  r = requests.post(f"{authenticate_api.endpoint}/MyAccountGetSmartRiderDetails", headers=headers, data=json.dumps(data))
   return r
 
 # authenticate_with_device_id authenticates a device ID "d_id". On
@@ -88,10 +116,9 @@ def authenticate_with_device_id(d_id):
   data = data_base
   data["Device"]["DeviceId"] = d_id
   r = requests.post(f"{authenticate_api.endpoint}/authenticate", headers=headers, data=json.dumps(data))
-  if r.status_code == 200:
-    r_json = r.json()
-    params_base["ApiKey"] = data_base["ApiKey"] = journey_planner_api.key = r_json["jjpapikey"]
-    data_base["Device"]["DeviceId"] = device_id = r_json["deviceID"]
+  r_json = r.json()
+  params_base["ApiKey"] = data_base["ApiKey"] = journey_planner_api.key = r_json["jjpapikey"]
+  data_base["Device"]["DeviceId"] = device_id = r_json["deviceID"]
   return r
 
 # fetch_stops_near_me returns transit stops relative to a position, "lat", and
@@ -122,9 +149,9 @@ def fetch_route_lookup(code):
   return requests.get(f"{journey_planner_api.endpoint}/Routes", headers=headers, params=params)
 
 # fetch_route_timetable returns the timetable information of a route "route"
-# between "start_date" and "end_date", and may return some additional
+# between "begin_date" and "end_date", and may return some additional
 # information depending on "return_notes". "route" is the UID of the route, and
-# "start_date" and "end_date" are in ISO 8601 format and are usually equal. The
+# "begin_date" and "end_date" are in ISO 8601 format and are usually equal. The
 # notable objects of the response include timetable trips and stop patterns.
 # The timetable trips information is the bulk of the response and contains
 # information for each trip on the route within the interval.
@@ -133,12 +160,12 @@ def fetch_route_lookup(code):
 # patterns information contains all of the possible stop arrangements the route
 # can take, usually there are just two, one for each direction: backwards and
 # forwards.
-def fetch_route_timetable(route, start_date, end_date, return_notes=True):
+def fetch_route_timetable(route, begin_date, end_date, return_notes=True):
   headers = headers_base
   params = params_base
   params |= {
     "Route": route,
-    "StartDate": start_date,
+    "StartDate": begin_date,
     "EndDate": end_date,
     "ReturnNotes": return_notes
   }
