@@ -1,6 +1,5 @@
 import json
 import requests
-from collections import namedtuple
 
 # api is a basic representation of an API. It has an API endpoint and key.
 class api:
@@ -34,19 +33,7 @@ user_api = api(
   endpoint="https://www.transperth.wa.gov.au/DesktopModules/JJPApiService/API/JJPApi",
   key="CB7EF0B64DEF4641A6054F4685489D8D")
 
-# device_id is generated using getUniqueId from the react-native-device-info
-# package. The method in which it is generated is OS specific. You can get your
-# device ID empirically using a proxy server with the Transperth app. It's
-# contained in the data of one of the first POST requests.
 device_id = None
-
-# auth_token is an access token to identify a user which is used with the user
-# API when a user logs into the Transperth app.
-auth_token = None
-
-# user email is the email address which is used with the user API when a user
-# logs into the Transperth app.
-user_email = None
 
 headers_base = {
   "Content-Type": "application/json"
@@ -57,6 +44,11 @@ params_base = {
   "ApiKey": None
 }
 
+# data_base["DeviceId"] is generated using getUniqueId from the
+# react-native-device-info package. The method in which it is generated is OS
+# specific. You can get your device ID empirically using a proxy server with
+# the Transperth app. It's contained in the data of one of the first POST
+# requests.
 data_base = {
   "format": "json",
   "AppApiKey": authenticate_api.key,
@@ -64,14 +56,14 @@ data_base = {
   "Device": {
     "DeviceId": None,
     },
-  "ApiKey": journey_planner_api.key
+  "ApiKey": journey_planner_api.key,
+  "Email": None
 }
 
 # authenticate_with_user authenticates a user with an email address and a
 # password. On authentication success, the response contains an access token
 # for the user API.
 def authenticate_with_user(email, password):
-  global device_id, auth_token, user_email
   headers = headers_base
   data = data_base
   data |= {
@@ -80,8 +72,8 @@ def authenticate_with_user(email, password):
   }
   r = requests.post(f"{authenticate_api.endpoint}/Authenticate", headers=headers, data=json.dumps(data))
   r_json = r.json()
-  auth_token = r_json["hash"]
-  user_email = email
+  data_base["AuthToken"] = r_json["hash"]
+  data_base["Email"] = email
   return r
 
 # fetch_transaction_history returns "max_transactions" past transactions of a
@@ -96,8 +88,6 @@ def fetch_transaction_history(psn, from_date, to_date, max_transactions=500):
   headers = headers_base
   data = data_base
   data |= {
-    "AuthToken": auth_token,
-    "Email": user_email,
     "PSN": psn,
     "fromDate": from_date,
     "toDate": to_date,
