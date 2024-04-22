@@ -95,8 +95,18 @@ def fetch_transaction_history(psn, from_date, to_date, max_transactions=500):
     "tPageSize": max_transactions,
     "mode": 4
   }
-  r = requests.post(f"{authenticate_api.endpoint}/MyAccountGetSmartRiderDetails", headers=headers, data=json.dumps(data))
-  return r
+  return requests.post(f"{authenticate_api.endpoint}/MyAccountGetSmartRiderDetails", headers=headers, data=json.dumps(data))
+
+# get_smartrider_list returns a list of SmartRiders linked to the user's
+# account.
+#
+# Each SmartRider contains its link information and its status. The link
+# information contains the card's number; account name; if it is the default
+# card; and if it the card is hidden.
+def get_smartrider_list():
+  headers = headers_base
+  data = data_base
+  return requests.post(f"{authenticate_api.endpoint}/MyAccountGetSmartRiderList", headers=headers, data=json.dumps(data))
 
 # authenticate_with_device_id authenticates a device ID "d_id". On
 # authentication success, the response contains the JourneyPlanner API key.
