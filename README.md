@@ -2,12 +2,8 @@
 An experimental Transperth app web API.
 
 ## Installation
-Clone the repository.
 ```bash
-https://github.com/jeremykaragania/transperth.git
-```
-Install the repository.
-```bash
+git clone https://github.com/jeremykaragania/transperth.git
 python3 -m pip install -e transperth
 ```
 
