@@ -1,5 +1,5 @@
 # Transperth
-An experimental Transperth app web API.
+A Transperth app web API.
 
 ## Installation
 ```bash
