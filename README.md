@@ -2,9 +2,9 @@
 A Transperth app web API.
 
 ## Installation
-```sh
-$ git clone https://github.com/jeremykaragania/transperth.git
-$ python3 -m pip install -e transperth
+```bash
+git clone https://github.com/jeremykaragania/transperth.git
+python3 -m pip install -e transperth
 ```
 
 ## Usage
