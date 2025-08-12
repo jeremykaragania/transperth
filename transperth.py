@@ -1,4 +1,8 @@
+from base64 import b64encode
+from datetime import datetime
+from hashlib import sha1
 import json
+from random import randint
 import requests
 
 # api is a basic representation of an API. It has an API endpoint and key.
@@ -208,6 +212,21 @@ def fetch_journeys(origin, destination, dt, return_notes=True, mapping_data_requ
     "MaxJourneys": max_journeys
   }
   return requests.get(f"{journey_planner_api.endpoint}/JourneyPlan", headers=headers, params=params)
+
+# realtime_request makes a POST request to the realtime API with the data
+# "data". Requests use a custom authentication scheme consisting of a username,
+# nonce, and token. The username and nonce values were easy to deduce from
+# request inspection. However, since the token is hashed, the correct value had
+# to be deduced from a disassembly of the Transperth app.
+def realtime_request(request_target, data):
+  headers = dict(headers_base)
+  now = datetime.now().strftime("%d%m%Y%H%M%S")
+  nonce = b64encode("-".join(["".join([str(randint(0, 9)) for i in range(6)]), now]).encode())
+  token = b64encode(sha1(f"TrAnSpErTh-{realtime_api.key.replace('-', '')}-{now}".encode()).digest())
+  headers |= {
+    "Authorization": f"Custom Username=PhoneApp, Nonce={nonce.decode()}, Token={token.decode()}"
+  }
+  return requests.post(f"{realtime_api.endpoint}{request_target}", headers=headers, data=data)
 
 # check_available_reference_data returns reference data used by the app. On
 # success, the response contains several AWS URLs to structured reference data
