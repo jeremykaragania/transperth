@@ -20,12 +20,11 @@ journey_planner_api = api(
   endpoint="https://au-journeyplanner.silverrail.io/journeyplannerservice/v2/REST/DataSets/PerthRestricted",
   key=None)
 
-# journey_planner_realtime_api is the JourneyPlanner realtime API. It is used
-# to request potentially realtime information about stops and trips. It accepts
-# POST requests.
-journey_planner_realtime_api = api(
-  endpoint="https://realtime.transperth.info/SJP",
-  key=None)
+# realtime_api is the realtime API. It is used to request potentially realtime
+# information about stops and trips. It accepts POST requests.
+realtime_api = api(
+  endpoint="https://realtime.transperth.info",
+  key="8acb640c-36cd-42f5-be67-109492f1b093")
 
 # user_api is the user API. It is the same API as the authentication API in
 # terms of its endpoint and API key.
