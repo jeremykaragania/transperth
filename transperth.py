@@ -67,13 +67,12 @@ data_base = {
 # password. On authentication success, the response contains an access token
 # for the user API.
 def authenticate_with_user(email, password):
-  headers = dict(headers_base)
   data = dict(data_base)
   data |= {
     "Email": email,
     "Password": password
   }
-  r = requests.post(f"{authenticate_api.endpoint}/Authenticate", headers=headers, data=json.dumps(data))
+  r = requests.post(f"{authenticate_api.endpoint}/Authenticate", headers=headers_base, data=json.dumps(data))
   r_json = r.json()
   data_base["AuthToken"] = r_json["hash"]
   data_base["Email"] = email
@@ -88,7 +87,6 @@ def authenticate_with_user(email, password):
 # travel zone; transaction amount; remaining balance; and some additional
 # information.
 def fetch_transaction_history(psn, from_date, to_date, max_transactions=500):
-  headers = dict(headers_base)
   data = dict(data_base)
   data |= {
     "PSN": psn,
@@ -98,7 +96,7 @@ def fetch_transaction_history(psn, from_date, to_date, max_transactions=500):
     "tPageSize": max_transactions,
     "mode": 4
   }
-  return requests.post(f"{authenticate_api.endpoint}/MyAccountGetSmartRiderDetails", headers=headers, data=json.dumps(data))
+  return requests.post(f"{authenticate_api.endpoint}/MyAccountGetSmartRiderDetails", headers=headers_base, data=json.dumps(data))
 
 # get_smartrider_list returns a list of SmartRiders linked to the user's
 # account.
@@ -107,18 +105,15 @@ def fetch_transaction_history(psn, from_date, to_date, max_transactions=500):
 # information contains the card's number; account name; if it is the default
 # card; and if it the card is hidden.
 def get_smartrider_list():
-  headers = dict(headers_base)
-  data = dict(data_base)
-  return requests.post(f"{authenticate_api.endpoint}/MyAccountGetSmartRiderList", headers=headers, data=json.dumps(data))
+  return requests.post(f"{authenticate_api.endpoint}/MyAccountGetSmartRiderList", headers=headers_base, data=json.dumps(data_base))
 
 # authenticate_with_device_id authenticates a device ID "d_id". On
 # authentication success, the response contains the JourneyPlanner API key.
 def authenticate_with_device_id(d_id):
   global device_id
-  headers = dict(headers_base)
   data = dict(data_base)
   data["Device"]["DeviceId"] = d_id
-  r = requests.post(f"{authenticate_api.endpoint}/authenticate", headers=headers, data=json.dumps(data))
+  r = requests.post(f"{authenticate_api.endpoint}/authenticate", headers=headers_base, data=json.dumps(data))
   r_json = r.json()
   params_base["ApiKey"] = data_base["ApiKey"] = journey_planner_api.key = r_json["jjpapikey"]
   data_base["Device"]["DeviceId"] = device_id = r_json["deviceID"]
@@ -128,7 +123,6 @@ def authenticate_with_device_id(d_id):
 # "long". The remaining request parameters: "max_distance", "max_stops", and
 # "speed" specify constraints on these transit stops.
 def fetch_stops_near_me(lat, long, max_distance=6500, max_stops=15, speed=4):
-  headers = dict(headers_base)
   params = dict(params_base)
   params |= {
     "maximumWalkDistanceInMetres": max_distance,
@@ -136,7 +130,7 @@ def fetch_stops_near_me(lat, long, max_distance=6500, max_stops=15, speed=4):
     "walkSpeed": speed,
     "GeoCoordinate": f"{lat}, {long}"
   }
-  return requests.get(f"{journey_planner_api.endpoint}/NearbyTransitStops", headers=headers, params=params)
+  return requests.get(f"{journey_planner_api.endpoint}/NearbyTransitStops", headers=headers_base, params=params)
 
 # fetch_route_lookup returns route information from a search term "code" which
 # is the code of the route. The response contains the information of routes
@@ -144,12 +138,11 @@ def fetch_stops_near_me(lat, long, max_distance=6500, max_stops=15, speed=4):
 # strict, "code" just has to be a subsequence. Notably, the information of a
 # route contains its UID and transport mode.
 def fetch_route_lookup(code):
-  headers = dict(headers_base)
   params = dict(params_base)
   params |= {
     "SearchTerm": code
   }
-  return requests.get(f"{journey_planner_api.endpoint}/Routes", headers=headers, params=params)
+  return requests.get(f"{journey_planner_api.endpoint}/Routes", headers=headers_base, params=params)
 
 # fetch_route_timetable returns the timetable information of a route "route"
 # between "begin_date" and "end_date", and may return some additional
@@ -164,7 +157,6 @@ def fetch_route_lookup(code):
 # can take, usually there are just two, one for each direction: backwards and
 # forwards.
 def fetch_route_timetable(route, begin_date, end_date, return_notes=True):
-  headers = dict(headers_base)
   params = dict(params_base)
   params |= {
     "Route": route,
@@ -172,7 +164,7 @@ def fetch_route_timetable(route, begin_date, end_date, return_notes=True):
     "EndDate": end_date,
     "ReturnNotes": return_notes
   }
-  return requests.get(f"{journey_planner_api.endpoint}/Timetable", headers=headers, params=params)
+  return requests.get(f"{journey_planner_api.endpoint}/Timetable", headers=headers_base, params=params)
 
 # fetch_journeys returns possible journeys between an origin position "origin"
 # and a destination position "destination" on a certain date and time "dt".
@@ -195,7 +187,6 @@ def fetch_route_timetable(route, begin_date, end_date, return_notes=True):
 # Supplementary location information is also returned to be referenced by a
 # journey.
 def fetch_journeys(origin, destination, dt, return_notes=True, mapping_data_required=True, time_mode="LeaveAfter", max_changes=2147483647, max_distance=2000, transport_modes="Bus;Rail;Ferry", check_realtime=False, speed=4, max_journeys=5):
-  headers = headers_base
   params = dict(params_base)
   params |= {
     "ReturnNotes": return_notes,
@@ -211,7 +202,7 @@ def fetch_journeys(origin, destination, dt, return_notes=True, mapping_data_requ
     "WalkSpeed": speed,
     "MaxJourneys": max_journeys
   }
-  return requests.get(f"{journey_planner_api.endpoint}/JourneyPlan", headers=headers, params=params)
+  return requests.get(f"{journey_planner_api.endpoint}/JourneyPlan", headers=headers_base, params=params)
 
 # realtime_request makes a POST request to the realtime API with the data
 # "data". Requests use a custom authentication scheme consisting of a username,
@@ -219,14 +210,13 @@ def fetch_journeys(origin, destination, dt, return_notes=True, mapping_data_requ
 # request inspection. However, since the token is hashed, the correct value had
 # to be deduced from a disassembly of the Transperth app.
 def realtime_request(request_target, data):
-  headers = dict(headers_base)
   now = datetime.now().strftime("%d%m%Y%H%M%S")
   nonce = b64encode("-".join(["".join([str(randint(0, 9)) for i in range(6)]), now]).encode())
   token = b64encode(sha1(f"TrAnSpErTh-{realtime_api.key.replace('-', '')}-{now}".encode()).digest())
   headers |= {
     "Authorization": f"Custom Username=PhoneApp, Nonce={nonce.decode()}, Token={token.decode()}"
   }
-  return requests.post(f"{realtime_api.endpoint}{request_target}", headers=headers, data=data)
+  return requests.post(f"{realtime_api.endpoint}{request_target}", headers=headers_base, data=data)
 
 # check_available_reference_data returns reference data used by the app. On
 # success, the response contains several AWS URLs to structured reference data
@@ -235,6 +225,4 @@ def realtime_request(request_target, data):
 # attributes, products, and vehicle categories. Some structured data may be
 # empty.
 def check_available_reference_data():
-  headers = dict(headers_base)
-  params = dict(params_base)
-  return requests.get(f"{journey_planner_api.endpoint}/AvailableReferenceData", headers=headers, params=params)
+  return requests.get(f"{journey_planner_api.endpoint}/AvailableReferenceData", headers=headers_base, params=params_base)
