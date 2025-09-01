@@ -204,6 +204,22 @@ def fetch_journeys(origin, destination, dt, return_notes=True, mapping_data_requ
   }
   return requests.get(f"{journey_planner_api.endpoint}/JourneyPlan", headers=headers_base, params=params)
 
+# fetch_realtime_trip fetches a realtime trip from a trip's UID "trip", and
+# it's date "date". It returns vehicle's current position if the trip is active
+# as well as other information about the trip. A polygon chain representing the
+# trip is returned if "is_mapping_data_returned" is true. I have no idea what
+# "is_realtime_checked" means, probably just checks if the trip is going to be
+# realtime. Notes can optionally be returned if "return_notes" is true.
+def fetch_realtime_trip(trip, date, is_mapping_data_returned=False, is_realtime_checked=True, return_notes=True):
+  data = {
+    "TripUid": trip,
+    "TripDate": date,
+    "IsMappingDataReturned": is_mapping_data_returned,
+    "IsRealTimeChecked": is_realtime_checked,
+    "ReturnNotes": return_notes
+  }
+  return realtime_request("/SJP/Trip", data=data)
+
 # realtime_request makes a POST request to the realtime API with the data
 # "data". Requests use a custom authentication scheme consisting of a username,
 # nonce, and token. The username and nonce values were easy to deduce from
