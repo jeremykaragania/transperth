@@ -213,10 +213,10 @@ def realtime_request(request_target, data):
   now = datetime.now().strftime("%d%m%Y%H%M%S")
   nonce = b64encode("-".join(["".join([str(randint(0, 9)) for i in range(6)]), now]).encode())
   token = b64encode(sha1(f"TrAnSpErTh-{realtime_api.key.replace('-', '')}-{now}".encode()).digest())
-  headers |= {
+  headers = {
     "Authorization": f"Custom Username=PhoneApp, Nonce={nonce.decode()}, Token={token.decode()}"
   }
-  return requests.post(f"{realtime_api.endpoint}{request_target}", headers=headers_base, data=data)
+  return requests.post(f"{realtime_api.endpoint}{request_target}", headers=headers, data=data)
 
 # check_available_reference_data returns reference data used by the app. On
 # success, the response contains several AWS URLs to structured reference data
