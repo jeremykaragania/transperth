@@ -72,10 +72,13 @@ def authenticate_with_user(email, password):
     "Email": email,
     "Password": password
   }
+
   r = requests.post(f"{authenticate_api.endpoint}/Authenticate", headers=headers_base, data=json.dumps(data))
   r_json = r.json()
+
   data_base["AuthToken"] = r_json["hash"]
   data_base["Email"] = email
+
   return r
 
 # fetch_transaction_history returns "max_transactions" past transactions of a
@@ -96,6 +99,7 @@ def fetch_transaction_history(psn, from_date, to_date, max_transactions=500):
     "tPageSize": max_transactions,
     "mode": 4
   }
+
   return requests.post(f"{authenticate_api.endpoint}/MyAccountGetSmartRiderDetails", headers=headers_base, data=json.dumps(data))
 
 # get_smartrider_list returns a list of SmartRiders linked to the user's
@@ -113,10 +117,13 @@ def authenticate_with_device_id(d_id):
   global device_id
   data = dict(data_base)
   data["Device"]["DeviceId"] = d_id
+
   r = requests.post(f"{authenticate_api.endpoint}/authenticate", headers=headers_base, data=json.dumps(data))
   r_json = r.json()
+
   params_base["ApiKey"] = data_base["ApiKey"] = journey_planner_api.key = r_json["jjpapikey"]
   data_base["Device"]["DeviceId"] = device_id = r_json["deviceID"]
+
   return r
 
 # fetch_stops_near_me returns transit stops relative to a position, "lat", and
@@ -130,6 +137,7 @@ def fetch_stops_near_me(lat, long, max_distance=6500, max_stops=15, speed=4):
     "walkSpeed": speed,
     "GeoCoordinate": f"{lat}, {long}"
   }
+
   return requests.get(f"{journey_planner_api.endpoint}/NearbyTransitStops", headers=headers_base, params=params)
 
 # fetch_route_lookup returns route information from a search term "code" which
@@ -142,6 +150,7 @@ def fetch_route_lookup(code):
   params |= {
     "SearchTerm": code
   }
+
   return requests.get(f"{journey_planner_api.endpoint}/Routes", headers=headers_base, params=params)
 
 # fetch_route_timetable returns the timetable information of a route "route"
@@ -164,6 +173,7 @@ def fetch_route_timetable(route, begin_date, end_date, return_notes=True):
     "EndDate": end_date,
     "ReturnNotes": return_notes
   }
+
   return requests.get(f"{journey_planner_api.endpoint}/Timetable", headers=headers_base, params=params)
 
 # fetch_journeys returns possible journeys between an origin position "origin"
@@ -202,6 +212,7 @@ def fetch_journeys(origin, destination, dt, return_notes=True, mapping_data_requ
     "WalkSpeed": speed,
     "MaxJourneys": max_journeys
   }
+
   return requests.get(f"{journey_planner_api.endpoint}/JourneyPlan", headers=headers_base, params=params)
 
 # fetch_realtime_trip fetches a realtime trip from a trip's UID "trip", and
@@ -218,6 +229,7 @@ def fetch_realtime_trip(trip, date, is_mapping_data_returned=False, is_realtime_
     "IsRealTimeChecked": is_realtime_checked,
     "ReturnNotes": return_notes
   }
+
   return realtime_request("/SJP/Trip", data=data)
 
 # realtime_request makes a POST request to the realtime API with the data
@@ -229,9 +241,11 @@ def realtime_request(request_target, data):
   now = datetime.now().strftime("%d%m%Y%H%M%S")
   nonce = b64encode("-".join(["".join([str(randint(0, 9)) for i in range(6)]), now]).encode())
   token = b64encode(sha1(f"TrAnSpErTh-{realtime_api.key.replace('-', '')}-{now}".encode()).digest())
+
   headers = {
     "Authorization": f"Custom Username=PhoneApp, Nonce={nonce.decode()}, Token={token.decode()}"
   }
+
   return requests.post(f"{realtime_api.endpoint}{request_target}", headers=headers, data=data)
 
 # check_available_reference_data returns reference data used by the app. On
