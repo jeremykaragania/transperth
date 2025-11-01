@@ -30,6 +30,12 @@ realtime_api = api(
   endpoint="https://realtime.transperth.info",
   key="8acb640c-36cd-42f5-be67-109492f1b093")
 
+# fare_api is the fare API. It is used to get additional information about
+# services.
+fare_api = api(
+  endpoint="https://serviceinformation.transperth.info/api",
+  key=None)
+
 # user_api is the user API. It is the same API as the authentication API in
 # terms of its endpoint and API key.
 user_api = api(
