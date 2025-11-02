@@ -182,6 +182,17 @@ def fetch_route_timetable(route, begin_date, end_date, return_notes=True):
 
   return requests.get(f"{journey_planner_api.endpoint}/Timetable", headers=headers_base, params=params)
 
+# fetch_timetable_data returns additional timetable information from a date
+# "date" and a list of trips "trips".
+def fetch_timetable_data(date, trips):
+  trip_ids = [int(trip.split(":")[-1]) for trip in trips]
+  params = {
+    "OperatingDate": date,
+    "TripIds": trip_ids
+  }
+
+  return requests.get(f"{fare_api.endpoint}", headers=headers_base, params=params)
+
 # fetch_journeys returns possible journeys between an origin position "origin"
 # and a destination position "destination" on a certain date and time "dt".
 # The positions can be specified as a stop UID or a coordinate and "dt" is in
