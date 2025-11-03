@@ -185,13 +185,17 @@ def fetch_route_timetable(route, begin_date, end_date, return_notes=True):
 # fetch_timetable_data returns additional timetable information from a date
 # "date" and a list of trips "trips".
 def fetch_timetable_data(date, trips):
+  headers = dict(headers_base)
+  headers |= {
+    "Accept": "application/json"
+  }
   trip_ids = [int(trip.split(":")[-1]) for trip in trips]
   params = {
     "OperatingDate": date,
     "TripIds": trip_ids
   }
 
-  return requests.get(f"{fare_api.endpoint}", headers=headers_base, params=params)
+  return requests.get(f"{fare_api.endpoint}/TripInfo", headers=headers, params=params)
 
 # fetch_journeys returns possible journeys between an origin position "origin"
 # and a destination position "destination" on a certain date and time "dt".
