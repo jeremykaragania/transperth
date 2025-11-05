@@ -23,7 +23,7 @@ your device ID empirically with a proxy server and the Transperth app.
 
 Device ID authentication is required to access the JourneyPlanner API, and
 account authentication is required to access the User API. However, no
-authentication is required to access the other APIS.
+authentication is required to access the other APIs.
 
 Always authenticate with your device ID first:
 ```py
