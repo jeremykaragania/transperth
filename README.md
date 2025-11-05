@@ -1,6 +1,10 @@
 # Transperth
 A Transperth app web API.
 
+You can directly interface with the APIs used by the Transperth app. The APIs,
+as named in the app's source code, include the JourneyPlanner, User, Realtime,
+and Fare APIs.
+
 ## Installation
 ```bash
 git clone https://github.com/jeremykaragania/transperth.git
@@ -14,15 +18,18 @@ First import the module:
 ```
 
 ### Authentication
-The JourneyPlanner and User APIs require authentication to access.
-Authentication will require your device ID which can be found empirically with a
-proxy server and the Transperth app.
+You can authenticate with your device ID or Transperth account. You can find
+your device ID empirically with a proxy server and the Transperth app.
 
-You can authenticate with your device ID:
+Device ID authentication is required to access the JourneyPlanner API, and
+account authentication is required to access the User API. However, no
+authentication is required to access the other APIS.
+
+Always authenticate with your device ID first:
 ```py
 >>> transperth.authenticate_with_device_id("YOUR_DEVICE_ID")
 ```
-Then, you can optionally authenticate with your Transperth account to access the User API:
+Then, you can optionally authenticate with your Transperth account:
 ```py
 >>> transperth.authenticate_with_user("YOUR_EMAIL", "YOUR_PASSWORD")
 ```
