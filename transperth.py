@@ -42,6 +42,10 @@ user_api = api(
     endpoint="https://www.transperth.wa.gov.au/DesktopModules/JJPApiService/API/JJPApi",
     key="CB7EF0B64DEF4641A6054F4685489D8D")
 
+# device_id is generated using getUniqueId from the react-native-device-info
+# package. The method in which it is generated is OS specific. You can get your
+# device ID empirically using a proxy server with the Transperth app. It's
+# contained in the data of one of the first POST requests.
 device_id = None
 
 headers_base = {
@@ -53,19 +57,11 @@ params_base = {
     "ApiKey": None
 }
 
-# data_base["DeviceId"] is generated using getUniqueId from the
-# react-native-device-info package. The method in which it is generated is OS
-# specific. You can get your device ID empirically using a proxy server with
-# the Transperth app. It's contained in the data of one of the first POST
-# requests.
 data_base = {
     "format": "json",
     "AppApiKey": authenticate_api.key,
-    "authMode": 1,
-    "Device": {
-        "DeviceId": None,
-        },
-    "ApiKey": journey_planner_api.key,
+    "ApiKey": None,
+    "AuthToken": None,
     "Email": None
 }
 
@@ -75,6 +71,9 @@ data_base = {
 def authenticate_with_user(email, password):
     data = dict(data_base)
     data |= {
+        "Device": {
+            "DeviceId": device_id
+        },
         "Email": email,
         "Password": password
     }
@@ -122,13 +121,18 @@ def get_smartrider_list():
 def authenticate_with_device_id(d_id):
     global device_id
     data = dict(data_base)
-    data["Device"]["DeviceId"] = d_id
+    data |= {
+        "authMode": 1,
+        "Device": {
+            "DeviceId": d_id
+        }
+    }
 
     r = requests.post(f"{authenticate_api.endpoint}/authenticate", headers=headers_base, data=json.dumps(data))
     r_json = r.json()
 
     params_base["ApiKey"] = data_base["ApiKey"] = journey_planner_api.key = r_json["jjpapikey"]
-    data_base["Device"]["DeviceId"] = device_id = r_json["deviceID"]
+    device_id = r_json["deviceID"]
 
     return r
 
