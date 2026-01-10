@@ -18,12 +18,14 @@ First import the module:
 ```
 
 ### Authentication
-You can authenticate with your device ID or Transperth account. You can find
-your device ID empirically with a proxy server and the Transperth app.
+You can authenticate with your device ID or Transperth account. Device ID
+authentication is required to access the JourneyPlanner API, and account
+authentication is required to access the User API. No authentication is
+required to access the other APIs.
 
-Device ID authentication is required to access the JourneyPlanner API, and
-account authentication is required to access the User API. However, no
-authentication is required to access the other APIs.
+Device ID is a misnomer as it's really just an arbitrary OneSignal External ID.
+You can find your actual device ID empirically with a proxy server and the
+Transperth app or you can create one.
 
 Always authenticate with your device ID first:
 ```py
