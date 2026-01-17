@@ -25,7 +25,7 @@ required to access the other APIs.
 
 Device ID is a misnomer as it's really just an arbitrary OneSignal External ID.
 You can find your actual device ID empirically with a proxy server and the
-Transperth app or you can create one.
+Transperth app.
 
 Always authenticate with your device ID first:
 ```py
